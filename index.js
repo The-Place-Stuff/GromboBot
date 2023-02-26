@@ -9,6 +9,8 @@ const client = new Client({ intents: [
     GatewayIntentBits.GuildMessages, 
     GatewayIntentBits.MessageContent
 ]})
+const keepAlive = require('./server')
+keepAlive()
 
 client.once("ready", async() => {
     console.log("Ready!")
