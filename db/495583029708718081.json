@@ -1,0 +1,27 @@
+{
+    "doneDaily": true,
+    "streak": 1,
+    "dailys": [
+        {
+            "content": "🥳 Finished Prototype of Protect The V.I.P.",
+            "date": 1677390838797
+        },
+        {
+            "content": "🏝️ Updated \"Yacht\" map to be significantly larger and more interesting.\n🛠️ Balanced the money values for the assassin to make it easier for them.",
+            "date": 1677391352089
+        },
+        {
+            "content": "🌙 Updated Lobby",
+            "date": 1677392903283
+        },
+        {
+            "content": "📜 Worked on Scribe Config API",
+            "date": 1677399578897
+        },
+        {
+            "content": "😭 Added assembly defs to Project Squad. Going to take forever to get the game working again with assembly defs but it will be worth it",
+            "date": 1677476659251
+        }
+    ],
+    "name": "Outer Cloud"
+}

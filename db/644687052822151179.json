@@ -1,0 +1,15 @@
+{
+    "doneDaily": true,
+    "streak": 1,
+    "dailys": [
+        {
+            "content": "**The Place: Trading Card Game**\n\n🛍️ Added Inventory & Shop\n<:poker_cards:839989105785307167> Booster Pack Display for Inventory\n📜 Utils for Inventory & Loot Parsing\n<:really:719706522766278657> Setup for Booster Pack Opening",
+            "date": 1677394003483
+        },
+        {
+            "content": "**The Place: Trading Card Game**\n<a:yayroach:670911204830478336> Testing & Bug Fixing Booster Pack System\n<:really:719706522766278657> Talked About Future Plans for The Bot\n\n**TODO**\n<:Lord:1058439041248415855> Booster Pack Opening\n<:kirbygun:754427877054742668> Void Bucks On Pack Open\n<a:doritooo:670910357505703936> Battles",
+            "date": 1677510169962
+        }
+    ],
+    "name": "Warhead"
+}
