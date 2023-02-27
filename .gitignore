@@ -1,5 +1,5 @@
 node_modules
-vanilla
 .env
-/db/users
-/data/compiled
+replit.nix
+.replit
+/db
