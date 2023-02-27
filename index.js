@@ -1,8 +1,7 @@
 require('dotenv').config()
-const fs = require('fs')
 const { writeJsonFile, readJsonFile, readDir } = require('./util/jsonUtils.js')
-const { getCurrentTime, getResetTime } = require('./util/timeUtils.js')
 const { Client, GatewayIntentBits } = require('discord.js')
+const moment = require('moment-timezone')
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -11,7 +10,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent
   ]
 })
-const comments = readJsonFile('data/comments')
 const keepAlive = require('./server')
 keepAlive()
 
@@ -28,37 +26,29 @@ client.on("messageCreate", async msg => {
 
   // Let's grab the userData of whoever sent the message, and a random comment from Grombo
   const user = msg.author
-  let userData = readJsonFile(`db/${user.id}`)
-  const comment = comments[getRandomNumberBetween(0, comments.length - 1)]
 
   // Let's create a file in the case where they don't exist in the database.
-  if (!userData) {
-    await writeJsonFile(`db`, user.id, {
-      name: user.username,
-      doneDaily: false,
-      streak: 0,
-      dailys: []
-    })
-  }
+  await createNewUser(user)
+  const userData = readJsonFile(`db/${user.id}`)
 
-  // Let's push an entry to their daily messages that contains the content and date.
+  // Let's push relevant data, such as the contents of the message and also update their username.
   userData.dailys.push({
     content: msg.content,
-    date: getCurrentTime()
+    date: new Date().getTime()
   })
-  // Let's update the name
   userData.name = user.username
+  
 
-  // Let's try to send a message, since some users may have DMs disabled
+  // We need to wrap this in a try-catch, for users who have DMs disabled
   try {
     // We need to seperate when streak and doneDaily are set to display different messages
-    if (canIncrementStreak(userData)) {
+    if (!userData.doneDaily) {
       userData.streak++
       console.log(`${userData.name} has reached a streak of ${userData.streak}`)
     }
 
     // Let's define the message depending if the daily activity has been done.
-    const description = userData.doneDaily ? comment : `You've reached a streak of ${userData.streak}. ${comment}`
+    const description = userData.doneDaily ? sendComment() : `You've reached a streak of ${userData.streak}. ${sendComment()}`
 
     // Let's send the user a DM when they submit their daily activites
     user.send({
@@ -72,7 +62,7 @@ client.on("messageCreate", async msg => {
         }
       ]
     })
-    if (canIncrementStreak(userData)) userData.doneDaily = true
+    if (!userData.doneDaily) userData.doneDaily = true
 
     // Finally, add json data
     writeJsonFile('db', user.id, userData)
@@ -82,30 +72,50 @@ client.on("messageCreate", async msg => {
 })
 
 function update() {
-  // Grab all files in the database
-  for (const userFile of readDir('db/')) {
-    const userData = readJsonFile(`db/${userFile}`)
-    if (!userData) continue
+  // Let's grab the current time in EST timezone
+  const now = moment.tz('America/New_York')
 
-    // Let's check if the current time is the reset time and reset dailys to false.
-    if (getCurrentTime() == getResetTime()) {
-      // If a user hasn't done their daily time, reset their streak to 0
-      if (!userData.doneDaily) {
-        console.log(`${userData.name} has lost their daily streak. :(`)
-        userData.streak = 0
-      }
-      userData.doneDaily = false
-      console.log("It's the start of a new day!")
-    }
-    // Add json data
-    writeJsonFile('db/', userFile.split(".")[0], userData)
+  // Resets dailys
+  if (now.hours() === 3 && now.minutes() === 0 && now.seconds() === 0) {
+    console.log("It's the start of a new day!")
+    resetDailys()
   }
   // Loops this function every second
   setTimeout(update, 1000)
 }
 
-function canIncrementStreak(userData) {
-  return getCurrentTime() > getResetTime() && !userData.doneDaily
+async function createNewUser(user) {
+  if (!readJsonFile(`db/${user.id}`)) {
+    writeJsonFile(`db`, user.id, {
+      name: user.username,
+      doneDaily: false,
+      streak: 0,
+      dailys: []
+    })
+  }
+}
+
+function sendComment() {
+  const comments = readJsonFile('data/comments')
+  return comments[getRandomNumberBetween(0, comments.length - 1)]
+}
+
+function resetDailys() {
+  // Grab all user files in the database
+  for (let userFile of readDir('db/')) {
+    userFile = userFile.split(".")[0]
+    const userData = readJsonFile(`db/${userFile}`)
+    if (!userData) continue
+
+    // If they haven't done their daily, they lose their streak.
+    if (!userData.doneDaily) {
+      console.log(`${userData.name} has lost their daily streak. :(`)
+      userData.streak = 0
+    }
+    userData.doneDaily = false
+    // Write json data
+    writeJsonFile('db/', userFile, userData)
+  }
 }
 
 function getRandomNumberBetween(min, max) {
