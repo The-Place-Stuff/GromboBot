@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { writeJsonFile, readJsonFile, readDir } = require('./util/jsonUtils.js')
-const { Client, GatewayIntentBits } = require('discord.js')
+const { Client, GatewayIntentBits, Collection } = require('discord.js')
+const fs = require('fs')
 const moment = require('moment-timezone')
 const client = new Client({
   intents: [
@@ -48,26 +49,16 @@ client.on("messageCreate", async msg => {
     }
 
     // Let's define the message depending if the daily activity has been done.
-    const description = userData.doneDaily ? sendComment() : `You've reached a streak of ${userData.streak}. ${sendComment()}`
+    const description = userData.doneDaily ? sendComment("comments") : `You've reached a streak of ${userData.streak}. ${sendComment("comments")}`
 
     // Let's send the user a DM when they submit their daily activites
-    user.send({
-      embeds: [
-        {
-          title: 'Grombo',
-          description: description,
-          thumbnail: {
-            url: 'https://cdn.discordapp.com/attachments/764283096803311636/1078858187102498928/Untitled465.png'
-          }
-        }
-      ]
-    })
+    sendDialogue(user, description)
     if (!userData.doneDaily) userData.doneDaily = true
 
     // Finally, add json data
     writeJsonFile('db', user.id, userData)
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 })
 
@@ -76,7 +67,7 @@ function update() {
   const now = moment.tz('America/New_York')
 
   // Resets dailys
-  if (now.hours() === 3 && now.minutes() === 0 && now.seconds() === 0) {
+  if (now.hours() === 6 && now.minutes() === 0 && now.seconds() === 0) {
     console.log("It's the start of a new day!")
     resetDailys()
   }
@@ -95,11 +86,6 @@ async function createNewUser(user) {
   }
 }
 
-function sendComment() {
-  const comments = readJsonFile('data/comments')
-  return comments[getRandomNumberBetween(0, comments.length - 1)]
-}
-
 function resetDailys() {
   // Grab all user files in the database
   for (let userFile of readDir('db/')) {
@@ -111,11 +97,31 @@ function resetDailys() {
     if (!userData.doneDaily) {
       console.log(`${userData.name} has lost their daily streak. :(`)
       userData.streak = 0
+      sendDialogue(client.users.cache.get(userFile), sendComment("streak_loss"))
     }
     userData.doneDaily = false
     // Write json data
     writeJsonFile('db/', userFile, userData)
   }
+}
+
+function sendComment(type) {
+  const comments = readJsonFile(`data/${file}.json`)
+  return comments[getRandomNumberBetween(0, comments.length - 1)]
+}
+
+function sendDialogue(user, msg = "") {
+  user.send({
+    embeds: [
+      {
+        title: 'Grombo',
+        description: msg,
+        thumbnail: {
+          url: 'https://cdn.discordapp.com/attachments/764283096803311636/1078858187102498928/Untitled465.png'
+        }
+      }
+    ]
+  })
 }
 
 function getRandomNumberBetween(min, max) {
