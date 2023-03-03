@@ -14,11 +14,29 @@ const client = new Client({
 const keepAlive = require('./server')
 keepAlive()
 
+client.commands = new Collection()
+const commands = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
+
 client.once("ready", async () => {
   console.log("Ready!")
   update()
 })
 client.login(process.env.TOKEN)
+
+// Runs behaviors on slash commands
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return
+  const command = client.commands.get(interaction.commandName)
+  if (!command) return
+
+  try {
+    await command.execute(interaction)
+  }
+  catch (error) {
+    console.error(error)
+    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+  }
+})
 
 // Fires when a message is sent
 client.on("messageCreate", async msg => {
