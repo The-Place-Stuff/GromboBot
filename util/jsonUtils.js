@@ -13,6 +13,15 @@ function readJsonFile(filePath) {
     }
 }
 
+function selectComment(type) {
+    const comments = readJsonFile(`data/${file}.json`)
+
+    const nextIntBetween = (min = 0, max = 0) => {
+        return Math.floor(Math.random() * (max - min) + min)
+    }
+    return comments[nextIntBetween(0, comments.length - 1)]
+}
+
 function readFile(filePath) {
     try {
         return fs.readFileSync(path.join(process.cwd(), filePath))
@@ -29,5 +38,6 @@ module.exports = {
     writeJsonFile,
     readJsonFile,
     readFile,
-    readDir
+    readDir,
+    selectComment
 }
