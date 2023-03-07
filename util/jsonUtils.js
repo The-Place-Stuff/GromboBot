@@ -14,7 +14,7 @@ function readJsonFile(filePath) {
 }
 
 function selectComment(type) {
-    const comments = readJsonFile(`data/${file}.json`)
+    const comments = readJsonFile(`data/${type}`)
 
     const nextIntBetween = (min = 0, max = 0) => {
         return Math.floor(Math.random() * (max - min) + min)

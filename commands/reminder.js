@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, SlashCommandIntegerOption } = require('@discordjs/builders')
+const { min } = require('moment-timezone')
 const { writeJsonFile } = require('../util/jsonUtils.js')
 const { getUserData } = require('../util/userUtils.js')
 
@@ -41,22 +42,41 @@ module.exports = {
     }),
     async execute(interaction) {
         const user = interaction.user
-        const userData = getUserData(user)
+        const userData = await getUserData(user)
 
         if (interaction.options.getSubcommand() === 'set') {
-            userData.reminder = {
-                timezone: interaction.options.getStringOption('timezone'),
-                hour: interaction.options.getIntegerOption('hour'),
-                minute: interaction.options.getIntegerOption('minute')
-            }
+            userData.reminder.timezone = interaction.options.getString('timezone', true)
+            userData.reminder.hour = interaction.options.getInteger('hour', true)
+            userData.reminder.minute = interaction.options.getInteger('minute', true)
             writeJsonFile('db/', user.id, userData)
-            await interaction.reply(`Timezone set!`)
+
+            const time = getTimeDisplay(interaction.options.getInteger('hour', true), interaction.options.getInteger('minute', true))
+
+            await interaction.reply({
+               content:  `Reminder set to ${time} on ${interaction.options.getString('timezone', true)}!`,
+               ephemeral: true
+            })
         } 
         else if (interaction.options.getSubcommand() === 'toggle') {
-            if (typeof userData.reminder.enabled == "undefined") userData.reminder.enabled = true
-    
             userData.reminder.enabled = !userData.reminder.enabled
-            await interaction.reply(userData.reminder.enabled ? "Reminders are now enabled" : "Reminders are now disabled")
+            writeJsonFile('db/', user.id, userData)
+            await interaction.reply({
+                content: userData.reminder.enabled ? "Reminders are now enabled" : "Reminders are now disabled",
+                ephemeral: true
+            })
         }
     }
+}
+
+function getTimeDisplay(hour = 0, minute = 0) {
+    let hourString = hour
+    let minuteString = minute
+
+    if (hour == 0) {
+        hourString = 0 + hour
+    }
+    if (minute == 0) {
+        minuteString = 0 + minute
+    }
+    return `${hourString}:${minuteString}`
 }

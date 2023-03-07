@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { writeJsonFile, readJsonFile, readDir, selectComment } = require('./util/jsonUtils.js')
+const { writeJsonFile, readDir, selectComment } = require('./util/jsonUtils.js')
 const { Client, GatewayIntentBits, Collection } = require('discord.js')
 const fs = require('fs')
 const { sendDialogue, getUserData } = require('./util/userUtils.js')
@@ -52,24 +52,19 @@ client.on("messageCreate", async msg => {
   })
   userData.name = user.username
   
-  // We need to wrap this in a try-catch, for users who have DMs disabled
-  try {
-    if (!userData.doneDaily) {
-      userData.streak++
-      console.log(`${userData.name} has reached a streak of ${userData.streak}`)
-    }
-
-    // Let's define the message depending if the daily activity has been done.
-    const description = userData.doneDaily ? selectComment("comments") : `You've reached a streak of ${userData.streak}. ${selectComment("comments")}`
-
-    // Let's send the user a DM when they submit their daily activites
-    sendDialogue(user, description)
-    if (!userData.doneDaily) userData.doneDaily = true
-
-    writeJsonFile('db', user.id, userData)
-  } catch (error) {
-    console.error(error)
+  if (!userData.doneDaily) {
+    userData.streak++
+    console.log(`${userData.name} has reached a streak of ${userData.streak}`)
   }
+
+  // Let's define the message depending if the daily activity has been done.
+  const description = userData.doneDaily ? selectComment("comments") : `You've reached a streak of ${userData.streak}. ${selectComment("comments")}`
+
+  // Let's send the user a DM when they submit their daily activites
+  sendDialogue(user, description)
+  if (!userData.doneDaily) userData.doneDaily = true
+
+  writeJsonFile('db', user.id, userData)
 })
 
 client.once("ready", async () => {
@@ -84,41 +79,44 @@ function update() {
   setTimeout(update, 1000)
 }
 
-function sendReminders() {
+async function sendReminders() {
   for (const userFile of readDir('db/')) {
     const user = client.users.cache.get(userFile.split(".")[0])
-    const data = getUserData(user)
-    
-    if (typeof data.reminder == "undefined") return
-  
+    const data = await getUserData(user)
+
+    if (typeof user == "undefined") continue
+
     const now = moment.tz(data.reminder.timezone);
     
     if (now.hours() === data.reminder.hour && now.minutes() === data.reminder.minute && now.seconds() === 0) {
-      console.log(`Reminded ${data.name} to do their daily!`)
-      sendDialogue(user, "Hey! Don't forget to send your daily progress!")
+      console.log(`Attempted to remind ${user.username}`)
+      if (data.reminder.enabled) {
+        sendDialogue(user, "Hey! Don't forget to send your daily progress!")
+      }
+      
     }
   }
 }
 
-function resetDailys() {
+async function resetDailys() {
   const now = moment.tz('America/New_York')
 
   if (now.hours() === 6 && now.minutes() === 0 && now.seconds() === 0) {
     console.log("It's the start of a new day!")
     // Grab all user files in the database
-    for (let user of readDir('db/')) {
-      const userId = user.split(".")[0]
-      const userData = readJsonFile(`db/${userId}`)
-      if (!userData) continue
+    for (let file of readDir('db/')) {
+      const user = client.users.cache.get(file.split(".")[0])
+      const data = await getUserData(user)
+      console.log(data)
   
       // If they haven't done their daily, they lose their streak.
-      if (!userData.doneDaily) {
-        console.log(`${userData.name} has lost their daily streak. :(`)
-        userData.streak = 0
-        sendDialogue(client.users.cache.get(userId), selectComment("streak_loss"))
+      if (!data.doneDaily && data.streak > 0) {
+        console.log(`${user.username} has lost their daily streak. :(`)
+        data.streak = 0
+        sendDialogue(user, selectComment("streak_loss"))
       }
-      userData.doneDaily = false
-      writeJsonFile('db/', user, userData)
+      data.doneDaily = false
+      writeJsonFile('db/', user.id, data)
     }
   }
 }
