@@ -51,7 +51,7 @@ client.on("messageCreate", async msg => {
     date: new Date().getTime()
   })
   userData.name = user.username
-  
+
   if (!userData.doneDaily) {
     userData.streak++
     console.log(`${userData.name} has reached a streak of ${userData.streak}`)
@@ -80,20 +80,20 @@ function update() {
 }
 
 async function sendReminders() {
-  for (const userFile of readDir('db/')) {
-    const user = client.users.cache.get(userFile.split(".")[0])
+  for (const fileName of readDir('db/')) {
+    const user = await client.users.fetch(fileName.split(".")[0])
+
+    if (user == undefined) continue
     const data = await getUserData(user)
 
-    if (typeof user == "undefined") continue
-
     const now = moment.tz(data.reminder.timezone);
-    
+
     if (now.hours() === data.reminder.hour && now.minutes() === data.reminder.minute && now.seconds() === 0) {
       console.log(`Attempted to remind ${user.username}`)
       if (data.reminder.enabled) {
         sendDialogue(user, "Hey! Don't forget to send your daily progress!")
       }
-      
+
     }
   }
 }
@@ -105,10 +105,10 @@ async function resetDailys() {
     console.log("It's the start of a new day!")
     // Grab all user files in the database
     for (let file of readDir('db/')) {
-      const user = client.users.cache.get(file.split(".")[0])
+      const user = client.users.fetch(file.split(".")[0])
       const data = await getUserData(user)
       console.log(data)
-  
+
       // If they haven't done their daily, they lose their streak.
       if (!data.doneDaily && data.streak > 0) {
         console.log(`${user.username} has lost their daily streak. :(`)
