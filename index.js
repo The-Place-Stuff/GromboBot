@@ -83,7 +83,7 @@ async function sendReminders() {
   for (const fileName of readDir('db/')) {
     const user = await client.users.fetch(fileName.split(".")[0])
 
-    if (user == undefined) continue
+    if (typeof user == 'undefined') continue
     const data = await getUserData(user)
 
     const now = moment.tz(data.reminder.timezone);
@@ -105,7 +105,7 @@ async function resetDailys() {
     console.log("It's the start of a new day!")
     // Grab all user files in the database
     for (let file of readDir('db/')) {
-      const user = client.users.fetch(file.split(".")[0])
+      const user = await client.users.fetch(file.split(".")[0])
       const data = await getUserData(user)
       console.log(data)
 
