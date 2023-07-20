@@ -12,3 +12,10 @@ export function read(path: string): string {
 export function readDir(path: string): string[] {
     return readdirSync(join(dirname(__dirname), path))
 }
+
+export function chooseComment(type: string): string {
+    const data = JSON.parse(read(`data/assets/${type}.json`)) as string[]
+    const randNumber = Math.floor(Math.random() * (data.length - 1))
+
+    return data[randNumber]
+}

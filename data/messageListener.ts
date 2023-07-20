@@ -1,33 +1,27 @@
-import { Message, MessageCreateOptions, User } from 'discord.js'
-import { UserManager } from './userManager'
+
+import { Message } from 'discord.js'
+import { Database } from './database'
+import { Messenger } from './messenger'
+import { chooseComment } from './fileUtils'
 
 export class MessageListener {
 
     public async onSend(message: Message) {
         const author = message.author
-        const user = UserManager.getUser(author.id)
+        const user = Database.getUser(author.id)
         
         if (!user) return
         if (!user.posted) {
             user.posted = true
             user.streak++
 
-            MessageListener.sendDialogue(author, 'You posted something today!')
+            Messenger.sendDM(author, this.postCreatedEmbed(user.streak))
             console.log(`${author.username} has reached a streak of ${user.streak}}`)
         }
-        UserManager.updateUser(author.id, user)
+        Database.updateUser(author.id, user)
     }
 
-    public static async sendDialogue(user: User, message: string) {
-        const options: MessageCreateOptions = {
-            embeds: [
-                { title: 'Grombo', description: message, thumbnail: {url: 'https://cdn.discordapp.com/attachments/764283096803311636/1078858187102498928/Untitled465.png'}}
-            ]
-        } 
-        try {
-            await user.send(options)
-        } catch (error) {
-            console.warn(error)
-        }
+    private postCreatedEmbed(streak: number) {
+        return Messenger.createEmbed('You made a post!', `You've reached a streak of ${streak}! ${chooseComment('post_created')}`)
     }
 }
