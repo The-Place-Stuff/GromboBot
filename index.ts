@@ -38,7 +38,7 @@ async function update(clock: Clock) {
 
 client.on('messageCreate', async (message) => {
     const messageListener = new MessageListener()
-    if (message.channelId != DEBUG || message.author.bot) return
+    if (message.channelId != CHANNEL_ID || message.author.bot) return
     messageListener.onSend(message)
 })
 
