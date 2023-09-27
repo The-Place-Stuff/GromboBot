@@ -16,7 +16,7 @@ export class MessageListener {
             user.coins += 100
 
             Messenger.sendDM(author, this.postCreatedEmbed(user.dailyStreak))
-            console.log(`${author.username} has reached a streak of ${user.dailyStreak}}`)
+            console.log(`${author.username} has reached a streak of ${user.dailyStreak}!`)
         }
         Database.updateUser(author.id, user)
     }
