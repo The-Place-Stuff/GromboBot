@@ -1,6 +1,6 @@
 import { Message } from 'discord.js'
 import { Database } from './database'
-import { Messenger } from './messenger'
+import { MESSAGE_FAILED, Messenger } from './messenger'
 import { chooseComment } from './fileUtils'
 
 export class MessageListener {
@@ -9,7 +9,10 @@ export class MessageListener {
         const author = message.author
         const user = Database.getUser(author.id)
         
-        if (!user) return
+        if (!user) {
+            Messenger.sendDM(author, MESSAGE_FAILED)
+            return;
+        }
         if (!user.messageSent) {
             user.messageSent = true
             user.dailyStreak++

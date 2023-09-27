@@ -1,7 +1,13 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, CacheType } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, CacheType, time } from "discord.js";
 import { SlashCommand } from "../types/types";
 import { Database } from "../data/database";
+import { Messenger, REMINDER_DISABLE, REMINDER_ENABLE, FAIL_REMINDER } from "../data/messenger";
 
+const locationToTZ: Map<string, string> = new Map()
+locationToTZ.set('America/New_York', 'ET')
+locationToTZ.set('America/Ojinaga', 'CT')
+locationToTZ.set('America/Los_Angeles', 'PT')
+locationToTZ.set('Europe/London', 'KT')
 
 export default class ReminderCommand implements SlashCommand {
     public data: SlashCommandBuilder = this.buildCommand();
@@ -19,10 +25,10 @@ export default class ReminderCommand implements SlashCommand {
                 option.setName('timezone')
                 option.setDescription('The timezone of the reminder')
                 option.setChoices(
-                    { name: 'Eastern Standard Time', value: 'America/New_York' },
-                    { name: 'Central Standard Time', value: 'America/Ojinaga' },
-                    { name: 'Pacific Standard Time', value: 'America/Los_Angeles' },
-                    { name: 'Keke Standard Time', value: 'Europe/London'}
+                    { name: 'Eastern Time', value: 'America/New_York' },
+                    { name: 'Central Time', value: 'America/Ojinaga' },
+                    { name: 'Pacific Time', value: 'America/Los_Angeles' },
+                    { name: 'Keke Time', value: 'Europe/London'}
                 )
                 option.setRequired(true)
                 return option
@@ -45,7 +51,7 @@ export default class ReminderCommand implements SlashCommand {
                     { name: '11:00 AM', value: 11 },
                     { name: '12:00 PM', value: 12 },
                     { name: '01:00 PM', value: 13 },
-                    { name: '02:00 AP', value: 14 },
+                    { name: '02:00 PM', value: 14 },
                     { name: '03:00 PM', value: 15 },
                     { name: '04:00 PM', value: 16 },
                     { name: '05:00 PM', value: 17 },
@@ -95,7 +101,7 @@ export default class ReminderCommand implements SlashCommand {
         const minute = interaction.options.getInteger('minute', true)
         
         if (!data) return interaction.reply({
-            content: 'Failed, you do not have a Grombo account!',
+            embeds: [ FAIL_REMINDER ],
             ephemeral: true
         })
         data.reminder = {
@@ -104,8 +110,12 @@ export default class ReminderCommand implements SlashCommand {
             minute
         }
         Database.updateUser(user.id, data)
+        const reminder = `${hour < 10 ? '0' : ''}${hour}:${minute == 0 ? '0' : ''}${minute} ${locationToTZ.get(timezone)}`
+
         return interaction.reply({
-            content: `Successfully updated reminder data!`,
+            embeds: [ 
+                Messenger.createEmbed('Updated reminder settings!', `You will receive reminders at ${reminder}.`) 
+            ],
             ephemeral: true
         })
     }
@@ -115,13 +125,13 @@ export default class ReminderCommand implements SlashCommand {
         const data = Database.getUser(user.id)
 
         if (!data) return interaction.reply({
-            content: 'Failed, you do not have a Grombo account!',
+            embeds: [ FAIL_REMINDER ],
             ephemeral: true
         })
         data.remindersEnabled = !data.remindersEnabled
         Database.updateUser(user.id, data)
         return interaction.reply({
-            content: `Reminders are now ${data.remindersEnabled ? 'enabled' : 'disabled'}!`,
+            embeds: [ data.remindersEnabled ? REMINDER_ENABLE : REMINDER_DISABLE ],
             ephemeral: true
         })
     }

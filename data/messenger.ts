@@ -26,3 +26,9 @@ const dailyGoals = 'https://discord.com/channels/741121896149549160/107885954105
 
 export const SUCCESS_REGISTER: APIEmbed = Messenger.createEmbed('Welcome to Grombo\'s Goals', `You can now start posting in ${dailyGoals}!`)
 export const FAIL_REGISTER: APIEmbed = Messenger.createEmbed('Failed to register!', 'It seems you have already registered in the past... Silly you!')
+
+export const FAIL_REMINDER: APIEmbed = Messenger.createEmbed('Failed to execute command!', 'It seems you do not have a Grombo account.')
+export const REMINDER_ENABLE: APIEmbed = Messenger.createEmbed('Toggled reminders!', 'Reminders are now enabled!')
+export const REMINDER_DISABLE: APIEmbed = Messenger.createEmbed('Toggled reminders!', 'Reminders are now disabled!')
+
+export const MESSAGE_FAILED: APIEmbed = Messenger.createEmbed('Aren\' you forgetting something?', 'Make an account with /register to start tracking your progress!')
