@@ -1,4 +1,3 @@
-
 import { Message } from 'discord.js'
 import { Database } from './database'
 import { Messenger } from './messenger'
@@ -11,12 +10,13 @@ export class MessageListener {
         const user = Database.getUser(author.id)
         
         if (!user) return
-        if (!user.posted) {
-            user.posted = true
-            user.streak++
+        if (!user.messageSent) {
+            user.messageSent = true
+            user.dailyStreak++
+            user.coins += 100
 
-            Messenger.sendDM(author, this.postCreatedEmbed(user.streak))
-            console.log(`${author.username} has reached a streak of ${user.streak}}`)
+            Messenger.sendDM(author, this.postCreatedEmbed(user.dailyStreak))
+            console.log(`${author.username} has reached a streak of ${user.dailyStreak}}`)
         }
         Database.updateUser(author.id, user)
     }

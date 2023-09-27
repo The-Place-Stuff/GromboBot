@@ -6,6 +6,8 @@ import { SlashCommand } from './types/types'
 import { readdirSync } from 'fs'
 import { Clock } from './data/clock'
 
+const keepAlive = require('./server')
+keepAlive()
 
 const CHANNEL_ID = '1078859541053186150'
 const DEBUG = '1127727209591865384'
@@ -15,10 +17,10 @@ const client = new Client({
     intents: [
         'Guilds',
         'GuildMessages',
+        'DirectMessages',
         'MessageContent'
     ]
 })
-
 
 client.login(process.env.TOKEN)
 
@@ -54,7 +56,6 @@ async function registerCommands() {
     }
 }
 registerCommands()
-
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return

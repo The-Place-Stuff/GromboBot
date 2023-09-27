@@ -1,12 +1,14 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js"
 
 type UserData = {
-    streak: number,
-    posted: boolean,
-    reminder: Reminder | false
+    dailyStreak: number,
+    coins: number,
+    messageSent: boolean,
+    remindersEnabled: boolean
+    reminder?: Reminder
 }
 
-type Reminder {
+type Reminder = {
     timezone: string,
     hour: number,
     minute: number

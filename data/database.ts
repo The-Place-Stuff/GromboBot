@@ -5,9 +5,10 @@ export class Database {
     
     public static createUser(id: string): UserData {
         const data: UserData = {
-            streak: 0,
-            posted: false,
-            reminder: false
+            dailyStreak: 0,
+            coins: 0,
+            messageSent: false,
+            remindersEnabled: false
         }
         write(`db/${id}.json`, JSON.stringify(data, null, 4))
         return JSON.parse(read(`db/${id}.json`)) as UserData

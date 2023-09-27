@@ -18,18 +18,18 @@ export class Clock {
         for (const [id, userData] of Database.getUsers()) {
             if (currentTime.isSame({ hours: 6, minutes: 0, seconds: 0 })) {
                 console.log('A new day begins!')
-                this.resetPost(id, userData)
+                this.reset(id, userData)
             }
             this.trySendReminder(id, userData)
         }
     }
 
-    //
-    // Sends out a reminder to a user
-    //
+    /*
+        Attempts to send a reminder to a user.
+    */
     private async trySendReminder(id: string, data: UserData) {
         const user = await this.client.users.fetch(id)
-        if (!data.reminder) return
+        if (!data.reminder || !data.remindersEnabled) return
         const reminder = data.reminder
         const currentTime = tz(reminder.timezone)
         if (!currentTime.isSame({ hours: reminder.hour, minutes: reminder.minute, seconds: 0 })) return
@@ -38,20 +38,20 @@ export class Clock {
         console.log(`Sent out a reminder to ${user.username}`)
     }
 
-    
-
-    //
-    // Sets a user's posted status to false and resets their streak if they haven't posted that day
-    //
-    private async resetPost(id: string, data: UserData) {
+    /*
+        Begins a brand new day!
+        Resets `dailyStreak` for those who haven't sent a message.
+        Will also reset everyone's `messageSent` status.
+    */
+    private async reset(id: string, data: UserData) {
         const user = await this.client.users.fetch(id)
 
-        if (!data.posted && data.streak > 0) {
-            console.log(`${user.username} has lost their streak of ${data.streak}}`)
+        if (!data.messageSent && data.dailyStreak > 0) {
+            console.log(`${user.username} has lost their streak of ${data.dailyStreak}}`)
             Messenger.sendDM(user, this.streakLostEmbed())
-            data.streak = 0
+            data.dailyStreak = 0
         }
-        data.posted = false
+        data.messageSent = false
         Database.updateUser(id, data)
     }
 

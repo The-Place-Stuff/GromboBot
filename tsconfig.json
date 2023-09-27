@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
-      "target": "es2021",
+      "target": "ES2021",
       "module": "Node16",
       "strict": true,
-      "moduleResolution": "node",
+      "moduleResolution": "Node",
       "resolveJsonModule": true
     }
   }
