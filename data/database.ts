@@ -3,7 +3,7 @@ import { read, write, readDir } from './fileUtils'
 
 export class Database {
     
-    public static createUser(id: string): UserData {
+    public static createUser(id: string): void {
         const data: UserData = {
             dailyStreak: 0,
             coins: 0,
@@ -11,12 +11,12 @@ export class Database {
             remindersEnabled: false
         }
         write(`db/${id}.json`, JSON.stringify(data, null, 4))
-        return JSON.parse(read(`db/${id}.json`)) as UserData
     }
 
     public static getUser(id: string): UserData | undefined {
-        const user: UserData = JSON.parse(read(`db/${id}.json`))
-        if (!user) return undefined
+        const file = read(`db/${id}.json`)
+        if (!file) return undefined
+        const user: UserData = JSON.parse(file)
         return user
     }
 

@@ -5,8 +5,13 @@ export function write(path: string, content: string): void {
     writeFileSync(join(dirname(__dirname), path), content)
 }
 
-export function read(path: string): string {
-    return readFileSync(join(dirname(__dirname), path), 'utf-8')
+export function read(path: string): string | false {
+    try {
+        return readFileSync(join(dirname(__dirname), path), 'utf-8')
+    }
+    catch {
+        return false
+    }   
 }
 
 export function readDir(path: string): string[] {
@@ -14,7 +19,10 @@ export function readDir(path: string): string[] {
 }
 
 export function chooseComment(type: string): string {
-    const data = JSON.parse(read(`data/assets/${type}.json`)) as string[]
+    const file = read(`data/assets/${type}.json`)
+    if (!file) return 'COMMENT NOT FOUND'
+
+    const data = JSON.parse(file) as string[]
     const randNumber = Math.floor(Math.random() * (data.length - 1))
 
     return data[randNumber]
