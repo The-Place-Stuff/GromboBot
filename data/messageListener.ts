@@ -7,12 +7,8 @@ export class MessageListener {
 
     public async onSend(message: Message) {
         const author = message.author
-        const user = Database.getUser(author.id)
-        
-        if (!user) {
-            Messenger.sendDM(author, MESSAGE_FAILED)
-            return;
-        }
+        const user = Database.getOrCreateUser(author.id)
+
         if (!user.messageSent) {
             user.messageSent = true
             user.dailyStreak++

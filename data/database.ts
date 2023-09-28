@@ -3,10 +3,10 @@ import { read, write, readDir } from './fileUtils'
 
 export class Database {
     
-    public static createUser(id: string): void {
+    public static createUser(id: string, registered: boolean): void {
         const data: UserData = {
             dailyStreak: 0,
-            coins: 0,
+            coins: registered ? 500 : 0,
             messageSent: false,
             remindersEnabled: false
         }
@@ -18,6 +18,14 @@ export class Database {
         if (!file) return undefined
         const user: UserData = JSON.parse(file)
         return user
+    }
+
+    public static getOrCreateUser(id: string): UserData {
+        const user = Database.getUser(id)
+        if (!user) {
+            Database.createUser(id, false)
+        }
+        return Database.getUser(id)!
     }
 
     public static updateUser(id: string, user: UserData) {

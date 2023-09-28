@@ -21,7 +21,7 @@ export default class RegisterCommand implements SlashCommand {
                 ephemeral: true
             })
         }
-        Database.createUser(user.id)
+        Database.createUser(user.id, true)
         return interaction.reply({
             embeds: [ SUCCESS_REGISTER ],
             ephemeral: true

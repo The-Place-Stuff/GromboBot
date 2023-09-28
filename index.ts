@@ -5,9 +5,12 @@ import { MessageListener } from './data/messageListener'
 import { SlashCommand } from './types/types'
 import { readdirSync } from 'fs'
 import { Clock } from './data/clock'
+import { createServer } from 'http'
 
-const keepAlive = require('./server')
-keepAlive()
+createServer((req, res) => {
+    res.write('Server online!')
+    res.end()
+}).listen(8080)
 
 const CHANNEL_ID = '1078859541053186150'
 const DEBUG = '1127727209591865384'
